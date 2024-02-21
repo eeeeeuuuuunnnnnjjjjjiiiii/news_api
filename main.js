@@ -2,7 +2,7 @@ const API_KEY=`a7b6acacf5f744089843abcad888acb8`;
 let newsList=[];
 const getLatestNews = async () => {
     const url = new URL(
-        `https://eunji-news-api.netlify.app/top-headlines?country=kr%apiKey=${API_KEY}`
+        `https://eunji-news-api.netlify.app/top-headlines?country=kr&apiKey=${API_KEY}`
     );
     const response = await fetch(url);
     const data = await response.json();
@@ -23,7 +23,7 @@ const render = () => {
         <p>${news.description}</p>
         <div>${news.source.name} * ${news.publishedAt}</div>
 </div>`
-);
+).join('');
     
     document.getElementById("news-board").innerHTML = newsHTML; 
 };
