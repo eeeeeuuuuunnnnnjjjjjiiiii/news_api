@@ -25,25 +25,25 @@ const getNews = async () => {
       if (data.totalResults == 0) {
         page = 0;
         totalPage = 0;
-        renderPagination();
+
         throw new Error("검색어와 일치하는 결과가 없습니다");
       }
 
       articles = data.articles;
       totalPage = Math.ceil(data.totalResults / PAGE_SIZE);
       render();
-      renderPagination();
+
     } else {
       page = 0;
       totalPage = 0;
-      renderPagination();
+
       throw new Error(data.message);
     }
   } catch (e) {
     errorRender(e.message);
     page = 0;
     totalPage = 0;
-    renderPagination();
+
   }
 };
 const getLatestNews = () => {
