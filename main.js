@@ -1,13 +1,13 @@
-const API_KEY = "b1fe516cb2ff4032b010ec5773f3a973";
+const API_KEY = "a7b6acacf5f744089843abcad888acb8";
 let articles = [];
 let page = 1;
 let totalPage = 1;
 const PAGE_SIZE = 10;
 // let url = new URL(
-//   `https://newsapi.org/v2/top-headlines?country=kr&pageSize=${PAGE_SIZE}`
+//   `https://eunji-news-api.netlify.app/top-headlines?country=kr&pageSize=${PAGE_SIZE}`
 // );
 let url = new URL(
-  `https://noona-times-v2.netlify.app/top-headlines?country=kr&pageSize=${PAGE_SIZE}`
+  `http://times-node-env.eba-appvq3ef.ap-northeast-2.elasticbeanstalk.com/top-headlines`
 );
 let menus = document.querySelectorAll("#menu-list button");
 menus.forEach((menu) =>
