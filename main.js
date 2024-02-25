@@ -1,73 +1,96 @@
-const API_KEY = "a7b6acacf5f744089843abcad888acb8";
-let articles = [];
+const API_KEY = `a7b6acacf5f744089843abcad888acb8`;
+let newsList = [];
+const menus = document.querySelectorAll(".menus button");
+menus.forEach(menu=>menu.addEventListener("click",(event)=>getNewsByCategory(event)));
+
+let url = new URL(`https://newsapi.org/v2/top-headlines?country=kr&apiKey=${API_KEY}`);
+
+let totalResults = 0;
 let page = 1;
-let totalPage = 1;
-const PAGE_SIZE = 10;
-// let url = new URL(
-//   `https://eunji-news-api.netlify.app/top-headlines?country=kr&pageSize=${PAGE_SIZE}`
-// );
-let url = new URL(
-  `http://times-node-env.eba-appvq3ef.ap-northeast-2.elasticbeanstalk.com/top-headlines`
-);
-let menus = document.querySelectorAll("#menu-list button");
-menus.forEach((menu) =>
-  menu.addEventListener("click", (e) => getNewsByTopic(e))
-);
+const pageSize = 10;
+const groupSize = 5;
 
 const getNews = async () => {
-  try {
-    url.searchParams.set("page", page);
-    console.log("Rrr", url);
-    let response = await fetch(url);
-    let data = await response.json();
-    if (response.status == 200) {
-      console.log("resutl", data);
-      if (data.totalResults == 0) {
-        page = 0;
-        totalPage = 0;
-        renderPagination();
-        throw new Error("검색어와 일치하는 결과가 없습니다");
+  try{
+    url.searchParams.set("page",page); // &page=page
+    url.searchParams.set("pageSize",pageSize);
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if(response.status===200){
+      if(data.articles.length === 0){
+        throw new Error("No result for this search");
       }
-
-      articles = data.articles;
-      totalPage = Math.ceil(data.totalResults / PAGE_SIZE);
+      newsList = data.articles;
+      totalResults = data.totalResults;
       render();
-      renderPagination();
-    } else {
-      page = 0;
-      totalPage = 0;
-      renderPagination();
-      throw new Error(data.message);
+      paginationRender();
+
+    }else{
+      throw new Error(data.message)
     }
-  } catch (e) {
-    errorRender(e.message);
-    page = 0;
-    totalPage = 0;
-    renderPagination();
-  }
-};
-const getLatestNews = () => {
-  page = 1; // 9. 새로운거 search마다 1로 리셋
-  // url = new URL(
-  //   `https://newsapi.org/v2/top-headlines?country=kr&pageSize=${PAGE_SIZE}&apiKey=${API_KEY}`
-  // );
+   
+  }catch(error){
+    errorRender(error.message);
+  };
+    
+  };
+
+const getLatestNews = async () =>{
+   url = new URL( `https://newsapi.org/v2/top-headlines?country=us&apiKey=${API_KEY}`
+  );   
+    getNews();
+  };
+
+const getNewsByCategory = async (event) => {
+  const category = event.target.textContent.toLowerCase();
   url = new URL(
-    `https://noona-times-v2.netlify.app/top-headlines?country=kr&pageSize=${PAGE_SIZE}&apiKey=${API_KEY}`
+    `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${API_KEY}`
+    );
+    getNews();
+};
+
+const getNewsByKeyword = async () => {
+  const keyword = document.getElementById("search-input").value;
+  url = new URL(`https://newsapi.org/v2/top-headlines?country=us&q=${keyword}&apiKey=${API_KEY}`
   );
   getNews();
 };
 
-const getNewsByTopic = (event) => {
-  const topic = event.target.textContent.toLowerCase();
+const render = () => {
+  const newsHTML = newsList.map(news => {
+    const imageSrc = news.urlToImage ? news.urlToImage : 'https://img.freepik.com/premium-vector/default-image-icon-vector-missing-picture-page-for-website-design-or-mobile-app-no-photo-available_87543-11093.jpg'; // 대체 이미지 주소 설정
+    return `
+      <div class="row news">
+        <div class="col-lg-4">
+          <img class="news-img-size" src="${imageSrc}" />
+        </div>
+        <div class="col-lg-8">
+          <h2>${news.title}</h2>
+          <p>${news.description}</p>
+          <div>${news.source.name} * ${news.publishedAt}</div>
+        </div>
+      </div>`;
+  }).join("");  
 
-  page = 1;
-  // url = new URL(
-  //   `https://newsapi.org/v2/top-headlines?country=kr&pageSize=${PAGE_SIZE}&category=${topic}&apiKey=${API_KEY}`
-  // );
-  url = new URL(
-    `https://noona-times-v2.netlify.app/top-headlines?country=kr&pageSize=${PAGE_SIZE}&category=${topic}&apiKey=${API_KEY}`
-  );
-  getNews();
+  document.getElementById("news-board").innerHTML = newsHTML;
+};
+
+const errorRender = (errorMessage)=>{
+  const errorHTML = `<div class="alert alert-danger" role="alert">
+ ${errorMessage}
+</div>`
+
+document.getElementById("news-board").innerHTML = errorHTML;
+};
+
+const openNav = () => {
+  document.getElementById("mySidenav").style.width = "250px";
+};
+
+
+const closeNav = () => {
+  document.getElementById("mySidenav").style.width = "0";
 };
 
 const openSearchBox = () => {
@@ -79,101 +102,49 @@ const openSearchBox = () => {
   }
 };
 
-const getNewsByKeyword = () => {
-  const keyword = document.getElementById("search-input").value;
+const paginationRender = () =>{
+  //totalResult.
+  //page
+  //pagesize
+  //totalPages
+  const totalPages = Math.ceil(totalResults/pageSize);
 
-  page = 1;
-  // url = new URL(
-  //   `https://newsapi.org/v2/top-headlines?q=${keyword}&country=kr&pageSize=${PAGE_SIZE}&apiKey=${API_KEY}`
-  // );
-  url = new URL(
-    `https://noona-times-v2.netlify.app/top-headlines?q=${keyword}&country=kr&pageSize=${PAGE_SIZE}&apiKey=${API_KEY}`
-  );
-  getNews();
-};
+  //pageGroup
+  const pageGroup = Math.ceil(page / groupSize);
 
-const render = () => {
-  let resultHTML = articles
-    .map((news) => {
-      return `<div class="news row">
-        <div class="col-lg-4">
-            <img class="news-img"
-                src="${
-                  news.urlToImage ||
-                  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqEWgS0uxxEYJ0PsOb2OgwyWvC0Gjp8NUdPw&usqp=CAU"
-                }" />
-        </div>
-        <div class="col-lg-8">
-            <a class="title" target="_blank" href="${news.url}">${
-        news.title
-      }</a>
-            <p>${
-              news.description == null || news.description == ""
-                ? "내용없음"
-                : news.description.length > 200
-                ? news.description.substring(0, 200) + "..."
-                : news.description
-            }</p>
-            <div>${news.source.name || "no source"}  ${moment(
-        news.publishedAt
-      ).fromNow()}</div>
-        </div>
-    </div>`;
-    })
-    .join("");
+  //lastPage
+  let lastPage = pageGroup * groupSize;
+  if(lastPage > totalPages){
+    lastPage=totalPages;
+  }
 
-  document.getElementById("news-board").innerHTML = resultHTML;
-};
-const renderPagination = () => {
-  let paginationHTML = ``;
-  let pageGroup = Math.ceil(page / 5);
+  //firstPage
+  const firstPage = 
+    lastPage - (groupSize-1) <=0 ? 1 :  lastPage - (groupSize-1);
+
+  let paginationHTML = ` <li class="page-item" onclick="moveToPage(${page-1})"><a class="page-link" href="#"><</a></li>`;
+
+  for(let i=firstPage; i<=lastPage; i++){
+    paginationHTML += `<li class="page-item ${i===page? "active":''}" onclick="moveToPage(${i})"><a class="page-link" href="#">${i}</a></li>`;
+  }
+  paginationHTML += `<li class="page-item" onclick="moveToPage(page+1)"><a class="page-link" href="#">></a></li>`;
+  
   let last = pageGroup * 5;
-  if (last > totalPage) {
-    last = totalPage;
+  if (last > totalPages) {
+    // 마지막 그룹이 5개 이하이면
+    last = totalPages;
+    let first = last - 4 <= 0 ? 1 : last - 4; // 첫그룹이 5이하이면
   }
-  let first = last - 4 <= 0 ? 1 : last - 4;
-  if (first >= 6) {
-    paginationHTML = `<li class="page-item" onclick="pageClick(1)">
-                        <a class="page-link" href='#js-bottom'>&lt;&lt;</a>
-                      </li>
-                      <li class="page-item" onclick="pageClick(${page - 1})">
-                        <a class="page-link" href='#js-bottom'>&lt;</a>
-                      </li>`;
-  }
-  for (let i = first; i <= last; i++) {
-    paginationHTML += `<li class="page-item ${i == page ? "active" : ""}" >
-                        <a class="page-link" href='#js-bottom' onclick="pageClick(${i})" >${i}</a>
-                       </li>`;
-  }
-
-  if (last < totalPage) {
-    paginationHTML += `<li class="page-item" onclick="pageClick(${page + 1})">
-                        <a  class="page-link" href='#js-program-detail-bottom'>&gt;</a>
-                       </li>
-                       <li class="page-item" onclick="pageClick(${totalPage})">
-                        <a class="page-link" href='#js-bottom'>&gt;&gt;</a>
-                       </li>`;
-  }
-
+  
   document.querySelector(".pagination").innerHTML = paginationHTML;
+  
 };
 
-const pageClick = (pageNum) => {
+
+const moveToPage = (pageNum) => {
+  console.log("movetopage",pageNum);
   page = pageNum;
-  window.scrollTo({ top: 0, behavior: "smooth" });
   getNews();
-};
-const errorRender = (message) => {
-  document.getElementById(
-    "news-board"
-  ).innerHTML = `<h3 class="text-center alert alert-danger mt-1">${message}</h3>`;
-};
-
-const openNav = () => {
-  document.getElementById("mySidenav").style.width = "250px";
-};
-
-const closeNav = () => {
-  document.getElementById("mySidenav").style.width = "0";
 };
 getLatestNews();
+
