@@ -3,7 +3,11 @@ let newsList = [];
 const menus = document.querySelectorAll(".menus button");
 menus.forEach(menu=>menu.addEventListener("click",(event)=>getNewsByCategory(event)));
 
-let url = new URL(`https://newsapi.org/v2/top-headlines?country=kr&apiKey=${API_KEY}`);
+let url = new URL(
+  `https://eunji-news-api.netlify.app//top-headlines?country=kr&apiKey=${API_KEY}`
+);
+//https://newsapi.org/v2/top-headlines?country=kr&apiKey=${API_KEY}
+//https://eunji-news-api.netlify.app/top-headlines?country=kr&apiKey=${API_KEY}
 
 let totalResults = 0;
 let page = 1;
@@ -37,7 +41,7 @@ const getNews = async () => {
   };
 
 const getLatestNews = async () =>{
-   url = new URL( `https://newsapi.org/v2/top-headlines?country=us&apiKey=${API_KEY}`
+   url = new URL( `https://eunji-news-api.netlify.app/top-headlines?country=us&apiKey=${API_KEY}`
   );   
     getNews();
   };
@@ -45,14 +49,14 @@ const getLatestNews = async () =>{
 const getNewsByCategory = async (event) => {
   const category = event.target.textContent.toLowerCase();
   url = new URL(
-    `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=${API_KEY}`
+    `https://eunji-news-api.netlify.app/top-headlines?country=us&category=${category}&apiKey=${API_KEY}`
     );
     getNews();
 };
 
 const getNewsByKeyword = async () => {
   const keyword = document.getElementById("search-input").value;
-  url = new URL(`https://newsapi.org/v2/top-headlines?country=us&q=${keyword}&apiKey=${API_KEY}`
+  url = new URL(`https://eunji-news-api.netlify.app/top-headlines?country=us&q=${keyword}&apiKey=${API_KEY}`
   );
   getNews();
 };
